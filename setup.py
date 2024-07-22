@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="llm_prompt_manager",
-    version="0.1.1",
+    version="0.1.2",
     author="Bryan Anye",
     author_email="bryan.anye.5@gmail.com",
     description="A flexible system for managing and processing prompt templates",

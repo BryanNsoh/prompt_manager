@@ -1,5 +1,5 @@
 import unittest
-from prompt_manager.core import PromptManager
+from llm_prompt_manager.core import PromptManager
 
 class TestPromptManager(unittest.TestCase):
 

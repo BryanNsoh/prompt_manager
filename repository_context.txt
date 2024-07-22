@@ -1,0 +1,546 @@
+<repository_structure>
+<directory name="llm_prompt_manager">
+    <file>
+        <name>.gitignore</name>
+        <path>.gitignore</path>
+        <content>Full content not provided</content>
+    </file>
+    <file>
+        <name>README.md</name>
+        <path>README.md</path>
+        <content>
+# Prompt Manager
+
+Prompt Manager is a flexible system for managing and processing prompt templates for use with language models. It simplifies the process of loading, managing, and formatting prompts, allowing you to focus on developing your AI applications.
+
+## Features
+
+- Load prompts from text files or direct text input
+- Insert variables into prompts using double braces `{{variable}}`
+- Handle various file types and encoding issues with a universal file opener
+- Flexible API for ease of use
+
+## Installation
+
+Install the package using pip:
+
+```sh
+pip install prompt_manager
+```
+
+## Usage
+
+### Basic Usage
+
+To load and process a template named `example_template` with no dependencies:
+
+```python
+from prompt_manager import PromptManager
+
+# Initialize the PromptManager with the path to the prompts folder
+pm = PromptManager("path/to/prompts/folder")
+
+# Load a prompt template and insert variables
+prompt = pm.get_prompt("example_template.txt", name="John Doe", age=30)
+print(prompt)
+```
+
+### Using Direct Text Prompts
+
+To use a direct text prompt and replace placeholders with direct values:
+
+```python
+from prompt_manager import PromptManager
+
+pm = PromptManager()
+
+# Use a direct text prompt
+prompt = pm.get_prompt("Hello, {{name}}!", name="Alice")
+print(prompt)
+```
+
+### Loading File Content as Variables
+
+To load and process a template and replace placeholders with the content of other files:
+
+```python
+from prompt_manager import PromptManager
+
+pm = PromptManager("path/to/prompts/folder")
+
+# Load a prompt template and insert file content as variables
+prompt = pm.get_prompt("example_template.txt", variable1=pm.load_file("sub_template1.txt"), variable2=pm.load_file("sub_template2.txt"))
+print(prompt)
+```
+
+## Exception Handling
+
+- Raises `FileNotFoundError` if the template file does not exist.
+- Raises `ValueError` if required placeholders are not provided or if there are issues with file dependencies.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+If you have suggestions for improvements, feel free to submit a pull request or open an issue.
+
+## Contact
+
+Author: Bryan Anye  
+Email: bryan.anye.5@gmail.com  
+GitHub: [BryanNsoh](https://github.com/BryanNsoh)
+        </content>
+    </file>
+    <file>
+        <name>repo_context_extractor.py</name>
+        <path>repo_context_extractor.py</path>
+        <content>
+import os
+
+EXCLUDED_DIRS = {".git", "__pycache__", "node_modules", ".venv"}
+FULL_CONTENT_EXTENSIONS = {".py", ".txt", ".dbml", ".yaml", ".toml", ".md",".sh",".ps1", }
+
+def create_file_element(file_path, root_folder):
+    relative_path = os.path.relpath(file_path, root_folder)
+    file_name = os.path.basename(file_path)
+    file_extension = os.path.splitext(file_name)[1]
+
+    file_element = [
+        f"    <file>\n        <name>{file_name}</name>\n        <path>{relative_path}</path>\n"
+    ]
+
+    if file_extension in FULL_CONTENT_EXTENSIONS:
+        file_element.append("        <content>\n")
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                file_element.append(file.read())
+        except UnicodeDecodeError:
+            file_element.append("Binary or non-UTF-8 content not displayed")
+        file_element.append("\n        </content>\n")
+    else:
+        file_element.append("        <content>Full content not provided</content>\n")
+
+    file_element.append("    </file>\n")
+    return "".join(file_element)
+
+def get_repo_structure(root_folder):
+    structure = ["<repository_structure>\n"]
+
+    for subdir, dirs, files in os.walk(root_folder):
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+        level = subdir.replace(root_folder, "").count(os.sep)
+        indent = " " * 4 * level
+        relative_subdir = os.path.relpath(subdir, root_folder)
+
+        structure.append(f'{indent}<directory name="{os.path.basename(subdir)}">\n')
+        for file in files:
+            file_path = os.path.join(subdir, file)
+            file_element = create_file_element(file_path, root_folder)
+            structure.append(file_element)
+        structure.append(f"{indent}</directory>\n")
+
+    structure.append("</repository_structure>\n")
+    return "".join(structure)
+
+def main():
+    root_folder = r"C:\Users\bnsoh2\OneDrive - University of Nebraska-Lincoln\Documents\Projects\llm_prompt_manager"
+    output_file = os.path.join(root_folder, "repository_context.txt")
+
+    # Delete the previous output file if it exists
+    if os.path.exists(output_file):
+        os.remove(output_file)
+        print(f"Deleted previous {output_file}")
+
+    repo_structure = get_repo_structure(root_folder)
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(repo_structure)
+
+    print(f"Fresh repository context has been extracted to {output_file}")
+
+if __name__ == "__main__":
+    main()
+        </content>
+    </file>
+    <file>
+        <name>setup.py</name>
+        <path>setup.py</path>
+        <content>
+from setuptools import setup, find_packages
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+setup(
+    name="llm_prompt_manager",
+    version="0.1.2",
+    author="Bryan Anye",
+    author_email="bryan.anye.5@gmail.com",
+    description="A flexible system for managing and processing prompt templates",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/BryanNsoh/prompt_manager",
+    packages=find_packages(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.6",
+    install_requires=[
+        "chardet",
+    ],
+)
+        </content>
+    </file>
+</directory>
+    <directory name="build">
+    </directory>
+        <directory name="bdist.win-amd64">
+        </directory>
+        <directory name="lib">
+        </directory>
+            <directory name="llm_prompt_manager">
+    <file>
+        <name>core.py</name>
+        <path>build\lib\llm_prompt_manager\core.py</path>
+        <content>
+"""
+Prompt Manager: A flexible system for managing and processing prompt templates.
+
+This module provides a PromptManager class that simplifies the process of loading,
+managing, and formatting prompt templates for use with language models. It supports
+loading prompts from files or direct text input, and allows for flexible variable 
+insertion.
+
+Classes:
+--------
+PromptManager
+    Main class for managing prompts and their variables.
+
+Functions:
+----------
+universal_file_opener(file_path: str) -> str
+    A utility function to open and read text from various file types.
+
+Example Usage:
+--------------
+    from prompt_manager import PromptManager
+
+    # Initialize the PromptManager
+    pm = PromptManager("path/to/prompts/folder")
+
+    # Load a prompt from a file and insert variables
+    prompt = pm.get_prompt("example_prompt", 
+                           variable1="value1", 
+                           variable2=pm.load_file("path/to/file.txt"))
+
+    # Use a direct text prompt
+    prompt = pm.get_prompt("This is a {{variable}} prompt", variable="test")
+
+    # The resulting prompt is ready to be sent to an LLM
+"""
+
+import os
+import json
+import chardet
+
+def universal_file_opener(file_path):
+    """Open and read text from various file types, handling encoding issues."""
+    try:
+        with open(file_path, 'rb') as file:
+            raw_data = file.read()
+        detected = chardet.detect(raw_data)
+        encoding = detected['encoding'] or 'utf-8'
+        return raw_data.decode(encoding)
+    except Exception as e:
+        raise ValueError(f"Error reading file {file_path}: {str(e)}")
+
+class PromptManager:
+    def __init__(self, prompts_dir=None):
+        self.prompts_dir = prompts_dir
+
+    def load_file(self, file_path):
+        """Load the content of a file given its path."""
+        if self.prompts_dir:
+            file_path = os.path.join(self.prompts_dir, file_path)
+        return universal_file_opener(file_path)
+
+    def _process_variable(self, value):
+        """Process a variable, converting to string or loading file content if needed."""
+        if isinstance(value, str) and os.path.isfile(value):
+            return self.load_file(value)
+        return str(value)
+
+    def get_prompt(self, main_prompt, **kwargs):
+        """
+        Generate the final prompt by replacing placeholders in the template with variable values.
+        
+        :param main_prompt: Can be a filename, direct text, or a variable containing text
+        :param kwargs: Variables to be inserted into the prompt
+        :return: Formatted prompt string
+        """
+        if self.prompts_dir and os.path.isfile(os.path.join(self.prompts_dir, main_prompt)):
+            template = self.load_file(main_prompt)
+        elif os.path.isfile(main_prompt):
+            template = self.load_file(main_prompt)
+        else:
+            template = main_prompt
+
+        processed_kwargs = {k: self._process_variable(v) for k, v in kwargs.items()}
+
+        try:
+            return template.format(**{k: f"{{{{{k}}}}}" for k in processed_kwargs.keys()}).format(**processed_kwargs)
+        except KeyError as e:
+            missing_key = str(e).strip("'")
+            raise ValueError(f"Missing argument for prompt: {missing_key}")
+        except Exception as e:
+            raise ValueError(f"Error formatting prompt: {str(e)}")
+
+# Example usage
+if __name__ == "__main__":
+    pm = PromptManager("prompts")
+    prompt = pm.get_prompt("example_template.txt", name="John", age=30)
+    print(prompt)
+
+    direct_prompt = pm.get_prompt("Hello, {{name}}!", name="Alice")
+    print(direct_prompt)
+        </content>
+    </file>
+    <file>
+        <name>__init__.py</name>
+        <path>build\lib\llm_prompt_manager\__init__.py</path>
+        <content>
+from .core import PromptManager
+        </content>
+    </file>
+            </directory>
+    <directory name="dist">
+    <file>
+        <name>llm_prompt_manager-0.1.2-py3-none-any.whl</name>
+        <path>dist\llm_prompt_manager-0.1.2-py3-none-any.whl</path>
+        <content>Full content not provided</content>
+    </file>
+    <file>
+        <name>llm_prompt_manager-0.1.2.tar.gz</name>
+        <path>dist\llm_prompt_manager-0.1.2.tar.gz</path>
+        <content>Full content not provided</content>
+    </file>
+    </directory>
+    <directory name="llm_prompt_manager">
+    <file>
+        <name>core.py</name>
+        <path>llm_prompt_manager\core.py</path>
+        <content>
+"""
+Prompt Manager: A flexible system for managing and processing prompt templates.
+
+This module provides a PromptManager class that simplifies the process of loading,
+managing, and formatting prompt templates for use with language models. It supports
+loading prompts from files or direct text input, and allows for flexible variable 
+insertion.
+
+Classes:
+--------
+PromptManager
+    Main class for managing prompts and their variables.
+
+Functions:
+----------
+universal_file_opener(file_path: str) -> str
+    A utility function to open and read text from various file types.
+
+Example Usage:
+--------------
+    from prompt_manager import PromptManager
+
+    # Initialize the PromptManager
+    pm = PromptManager("path/to/prompts/folder")
+
+    # Load a prompt from a file and insert variables
+    prompt = pm.get_prompt("example_prompt", 
+                           variable1="value1", 
+                           variable2=pm.load_file("path/to/file.txt"))
+
+    # Use a direct text prompt
+    prompt = pm.get_prompt("This is a {{variable}} prompt", variable="test")
+
+    # The resulting prompt is ready to be sent to an LLM
+"""
+
+import os
+import json
+import chardet
+
+def universal_file_opener(file_path):
+    """Open and read text from various file types, handling encoding issues."""
+    try:
+        with open(file_path, 'rb') as file:
+            raw_data = file.read()
+        detected = chardet.detect(raw_data)
+        encoding = detected['encoding'] or 'utf-8'
+        return raw_data.decode(encoding)
+    except Exception as e:
+        raise ValueError(f"Error reading file {file_path}: {str(e)}")
+
+class PromptManager:
+    def __init__(self, prompts_dir=None):
+        self.prompts_dir = prompts_dir
+
+    def load_file(self, file_path):
+        """Load the content of a file given its path."""
+        if self.prompts_dir:
+            file_path = os.path.join(self.prompts_dir, file_path)
+        return universal_file_opener(file_path)
+
+    def _process_variable(self, value):
+        """Process a variable, converting to string or loading file content if needed."""
+        if isinstance(value, str) and os.path.isfile(value):
+            return self.load_file(value)
+        return str(value)
+
+    def get_prompt(self, main_prompt, **kwargs):
+        """
+        Generate the final prompt by replacing placeholders in the template with variable values.
+        
+        :param main_prompt: Can be a filename, direct text, or a variable containing text
+        :param kwargs: Variables to be inserted into the prompt
+        :return: Formatted prompt string
+        """
+        if self.prompts_dir and os.path.isfile(os.path.join(self.prompts_dir, main_prompt)):
+            template = self.load_file(main_prompt)
+        elif os.path.isfile(main_prompt):
+            template = self.load_file(main_prompt)
+        else:
+            template = main_prompt
+
+        processed_kwargs = {k: self._process_variable(v) for k, v in kwargs.items()}
+
+        try:
+            return template.format(**{k: f"{{{{{k}}}}}" for k in processed_kwargs.keys()}).format(**processed_kwargs)
+        except KeyError as e:
+            missing_key = str(e).strip("'")
+            raise ValueError(f"Missing argument for prompt: {missing_key}")
+        except Exception as e:
+            raise ValueError(f"Error formatting prompt: {str(e)}")
+
+# Example usage
+if __name__ == "__main__":
+    pm = PromptManager("prompts")
+    prompt = pm.get_prompt("example_template.txt", name="John", age=30)
+    print(prompt)
+
+    direct_prompt = pm.get_prompt("Hello, {{name}}!", name="Alice")
+    print(direct_prompt)
+        </content>
+    </file>
+    <file>
+        <name>__init__.py</name>
+        <path>llm_prompt_manager\__init__.py</path>
+        <content>
+from .core import PromptManager
+        </content>
+    </file>
+    </directory>
+    <directory name="llm_prompt_manager.egg-info">
+    <file>
+        <name>dependency_links.txt</name>
+        <path>llm_prompt_manager.egg-info\dependency_links.txt</path>
+        <content>
+
+
+        </content>
+    </file>
+    <file>
+        <name>PKG-INFO</name>
+        <path>llm_prompt_manager.egg-info\PKG-INFO</path>
+        <content>Full content not provided</content>
+    </file>
+    <file>
+        <name>requires.txt</name>
+        <path>llm_prompt_manager.egg-info\requires.txt</path>
+        <content>
+chardet
+
+        </content>
+    </file>
+    <file>
+        <name>SOURCES.txt</name>
+        <path>llm_prompt_manager.egg-info\SOURCES.txt</path>
+        <content>
+README.md
+setup.py
+llm_prompt_manager/__init__.py
+llm_prompt_manager/core.py
+llm_prompt_manager.egg-info/PKG-INFO
+llm_prompt_manager.egg-info/SOURCES.txt
+llm_prompt_manager.egg-info/dependency_links.txt
+llm_prompt_manager.egg-info/requires.txt
+llm_prompt_manager.egg-info/top_level.txt
+        </content>
+    </file>
+    <file>
+        <name>top_level.txt</name>
+        <path>llm_prompt_manager.egg-info\top_level.txt</path>
+        <content>
+llm_prompt_manager
+
+        </content>
+    </file>
+    </directory>
+    <directory name="tests">
+    <file>
+        <name>test_prompt_manager.py</name>
+        <path>tests\test_prompt_manager.py</path>
+        <content>
+import unittest
+from llm_prompt_manager.core import PromptManager
+
+class TestPromptManager(unittest.TestCase):
+
+    def setUp(self):
+        self.pm = PromptManager("tests/prompts")
+
+    def test_load_file(self):
+        content = self.pm.load_file("test_template.txt")
+        self.assertIn("Hello, {{name}}!", content)
+
+    def test_get_prompt_with_file_template(self):
+        prompt = self.pm.get_prompt("test_template.txt", name="John")
+        self.assertIn("Hello, John!", prompt)
+
+    def test_get_prompt_with_direct_text(self):
+        prompt = self.pm.get_prompt("Hello, {{name}}!", name="Alice")
+        self.assertEqual(prompt, "Hello, Alice!")
+
+    def test_get_prompt_with_file_variable(self):
+        prompt = self.pm.get_prompt("Main template with {{sub_template}}", sub_template=self.pm.load_file("sub_template.txt"))
+        self.assertIn("Main template with This is a sub template.", prompt)
+
+if __name__ == '__main__':
+    unittest.main()
+
+        </content>
+    </file>
+    </directory>
+        <directory name="prompts">
+    <file>
+        <name>sub_template.txt</name>
+        <path>tests\prompts\sub_template.txt</path>
+        <content>
+This is a sub template.
+
+        </content>
+    </file>
+    <file>
+        <name>test_template.txt</name>
+        <path>tests\prompts\test_template.txt</path>
+        <content>
+Hello, {{name}}!
+
+        </content>
+    </file>
+        </directory>
+</repository_structure>
